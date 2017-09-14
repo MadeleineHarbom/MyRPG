@@ -1,4 +1,4 @@
-from Game.classes import Character, MyColours, SpecAttack, Magic, Healing, Enemy, Boss
+from Game.classes import Player, SpecAttack, Magic, Healing
 import sys
 import time
 import random
@@ -27,8 +27,7 @@ def setup_party():
             adventurer = input()
 
 
-def chose_race():
-    global name
+def chose_race(name):
     print('Your character can be Human, elf, dwarf or orc. Or type stats (s) to hear about the races.')
     race = False
     while race is False:
@@ -58,7 +57,7 @@ def chose_race():
             print('Huh?')
 
 
-def chose_class():
+def chose_class(name):
     global name
     given = False
     print(name, 'needs a class. You can chose between warrior, fighter, mage or healer')
@@ -267,7 +266,7 @@ def get_roomroll():
     else:
         roomroll = random.randint(0, size + 3)
         roomroll -= random.randind(0, previous)
-    if roomroll < 0
+    if roomroll < 0:
         roomroll = 0
     return roomroll
 
@@ -276,19 +275,29 @@ def empty_room():
     print('The room you have entered is empty!')
     print('You can relax and regain vitality (r) or search the room for hidden treasures or dangers (s)')
     empty = True
-        while empty:
-            emptyroom = input().lower()
-            if emptyroom.startswith('r'):
-                for char in party:
-                    self.generate()
-            elif emptyroom.startswith(('s')):
-                emptyroomroll = seach_empty_room()
-                if emptyroomroll == 0:
-                    print('The room is completely empty and you move further into the cave')
-                else:
+    while empty:
+        emptyroom = input().lower()
+        if emptyroom.startswith('r'):
+            for char in party:
+                self.generate()
+        elif emptyroom.startswith(('s')):
+            emptyroomroll = seach_empty_room()
+            if emptyroomroll == 0:
+                print('The room is completely empty and you move further into the cave')
+                emptyroomtuple = (True, False, 0)
+            elif emptyroomroll == 1:
+                print('You see a chest')
+                print('It contains:')
+                emptyroomtuple = (False, True, 0)
+            else:
+                ('As you search the room, you stumble')
+                time.sleep(1)
+                ('You hear noices')
+                time.sleep(2)
+                ('Someone must have heard you')
+                emptyroomroll =- 1
+                emptyroomtuple (False, False, emptyroomroll)
 
-    monsters = emptyroomroll
-    return monsters
 
 
     pass
@@ -297,7 +306,7 @@ def empty_room():
 def search_empty_room()
     global size
     if size == 1:
-        emptyroomroll = random.randint(0, 2)
+        emptyroomroll = random.randint(0, 3)
     elif size in range(2, 4):  # 2 up to, but not including, 4 (check this)
         emptyroomroll = random.randint(0, size + 2)
     else:
@@ -308,13 +317,20 @@ def get_monsters():
 
 
     #Needs to return previous += monsters
+    pass
 
 
+def get_loot(lootluck):
+
+    pass
 
 
 def level_up():
     # Chose where you want +1 when you gain a level
     pass
+
+
+
 
 # Melee Attacks for warrior
 PowerAttack = SpecAttack('Power Attack', 5, 50, 'none', 1) #Standard attack
@@ -347,18 +363,21 @@ heallist = [SmallHeal, Heal, GreatHeal, FromAbove]
 meleeactions = ['Special Attack,' 'White damage', 'Potions']
 casteractions = ['Magic', 'Healing', 'Regenerate mana', 'Potions']
 
-
+ItemNameFirst =()
+ItemNameSecond = ()
 
 print('Welcome to the world of I-cant-be-bothered-making-up-name')
 
 size = setup_party()
 
 party = []
+partylevel = 1
+inventory = []
 
 for i in range(size):
     name = input('Enter the name of your character\n')
-    race = chose_race()
-    cla = chose_class()
+    race = chose_race(name)
+    cla = chose_class(name)
     actions = generate_actions()
     Sactions1 = generate_sactions1()
     Sactions2 = generate_sactions2()
@@ -368,7 +387,7 @@ for i in range(size):
     attackstat = generate_attack_stat()
     defensestat = generate_defense_stat()
     healingstat = generate_healing_stat()
-    party.append(Character(name, race, cla, actions, Sactions1, Sactions2,
+    party.append(Player(name, race, cla, actions, Sactions1, Sactions2,
                            maxhp, maxmp, magicstat, attackstat, defensestat, healingstat))
     print('You are now ' + name +', the ' + race + '.')
     print('You have pledged your skills as a ' + cla + ' to rescue the people of I-cant-be bothered-making-up-a-name from whatever-is-in-this-cave-or-whatever-it-is.')
@@ -390,7 +409,23 @@ exp = 0  # Not yet in use
 while partyalive:
     roomroll = get_roomroll()
     if roomroll == 0:
-        empty_room()
+        emptyroomtuple = empty_room()
+        if emptyroomtuple[0] = True:
+            continue
+        elif emptyroomtuple[1] = True:
+            lootluck = 0
+            get_loot()
+        else:
+            monster = emptyroomtuple[2]
+    else:
+        monster = roomroll
+
+    if monster == 0
+        continue
+    else:
+        for i in monster:
+
+
 
 
 
