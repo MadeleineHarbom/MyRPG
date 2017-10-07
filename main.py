@@ -1,4 +1,4 @@
-from Game.classes import Player, SpecAttack, Magic, Healing
+from Game.classes import Player, SpecAttack, Magic, Healing, Enemy
 import sys
 import time
 import random
@@ -58,7 +58,6 @@ def chose_race(name):
 
 
 def chose_class(name):
-    global name
     given = False
     print(name, 'needs a class. You can chose between warrior, fighter, mage or healer')
     while given is False:
@@ -83,8 +82,10 @@ def generate_actions():
     global cla
     if cla == 'warrior' or cla == 'fighter':
         actions = meleeactions
-    elif cla == 'healer' or cla == 'mage':
-        actions = casteractions
+    elif cla == 'healer':
+        actions = healeractionsctions
+    elif cla == 'mage':
+        actions = mageactions
     return actions
 
 
@@ -119,13 +120,13 @@ def generate_hp():
     return maxhp
 
 
-def generate_ap():
+def generate_rage():
     global cla
     if cla == 'warrior' or cla == 'fighter':
-        maxap = 80
+        maxrage = 80
     else:
-        maxap = None
-    return maxap
+        maxrage = None
+    return maxrage
 
 
 def generate_mp():
@@ -165,26 +166,26 @@ def generate_magic_stat():
 def generate_attack_stat():
     global race
     global cla
-    attack = 10
+    attackbonus = 10
     if race == 'human':
-        attack += 0
+        attackbonus += 0
     elif race == 'elf':
-        attack -= 2
+        attackbonus -= 2
     elif race == 'dwarf':
-        attack += 0
+        attackbonus += 0
     elif race == 'orc':
-        attack += 2
+        attackbonus += 2
 
     if cla == 'warrior':
-        attack += 2
+        attackbonus += 2
     elif cla == 'fighter':
-        attack += 7
+        attackbonus += 7
     elif cla == 'mage':
-        attack -= 5
+        attackbonus -= 5
     elif cla == 'healer':
-        attack -= 7
+        attackbonus -= 7
 
-    return attack
+    return attackbonus
 
 
 def generate_defense_stat():
@@ -237,8 +238,8 @@ def generate_healing_stat():
     return healing
 
 
-def enter_cave_story():
-    print('You enter the cave')
+def enter_cave_story(): #Commented out for debugging reasons
+    '''print('You enter the cave')
     time.sleep(1)
     print('It is dark and damp.')
     time.sleep(1)
@@ -251,10 +252,20 @@ def enter_cave_story():
     time.sleep(1)
     print('Through the dust you hear ominous cracking.')
     time.sleep(2)
-    print('Left with no other choice, you move towards the sound')
+    print('Left with no other choice, you move towards the sound')'''
+    input('Press enter to continue and see what is in the next room')
 
+
+def first_room():
+    '''Returns a monsterlist with only one monster'''
+    print('An ugly creature in snarling at you from the dark inner corner')
+    monster = 1 #Moster is the numer of monsters
+    #monsters = [] #Monsters is a list of monsters
+    monsters = get_monsters(monster, party_level)
+    return monsters
 
 def get_roomroll():
+    '''Returns roomroll, dependant on partysize and and how many monsters encountered in the previous room'''
     global size
     global previous
     if size == 1:
@@ -272,13 +283,17 @@ def get_roomroll():
 
 
 def empty_room():
+    '''NOT DONE
+    When a room is empty you can rest or search the room
+    When you search, you can get treasure or monster(s)
+    What should I return?'''
     print('The room you have entered is empty!')
     print('You can relax and regain vitality (r) or search the room for hidden treasures or dangers (s)')
     empty = True
     while empty:
         emptyroom = input().lower()
         if emptyroom.startswith('r'):
-            for char in party:
+            for i in party:
                 self.generate()
         elif emptyroom.startswith(('s')):
             emptyroomroll = seach_empty_room()
@@ -296,14 +311,12 @@ def empty_room():
                 time.sleep(2)
                 ('Someone must have heard you')
                 emptyroomroll =- 1
-                emptyroomtuple (False, False, emptyroomroll)
+                emptyroomtuple = (False, False, emptyroomroll)
 
 
-
-    pass
-
-
-def search_empty_room()
+def search_empty_room():
+    '''Used aftedr searching a empty room, in empty_room()
+    Returns a roll, determined by party size'''
     global size
     if size == 1:
         emptyroomroll = random.randint(0, 3)
@@ -313,11 +326,122 @@ def search_empty_room()
         emptyroomroll = random.randint(0, size + 3)
     return emptyroomroll
 
-def get_monsters():
+
+def get_monsters(monster, party_level):
+    '''Input requires: monster, an integer that determines the number of monsters in a room
+    Returns a list of monsters'''
+    monsters = []
+    for i in range(monster):
+        cla = monsterclasses[random.randint(0, 3)]
+        race = monsterrace[random.randint(0, len(monsterrace)-1)]
+        if cla == 'warrior':
+            actions = meleewlist
+            maxhp = 150 + party_level * 30
+            magicstat = 0
+            attackstat = party_level * 5
+            defensestat = party_level * 10
+            healingstat = 0
+        elif cla == 'fighter':
+            maxhp = 120 + party_level * 20
+            actions = meleeflist
+            magicstat = 0
+            attackstat = party_level * 7
+            defensestat = party_level * 5
+            healingstat = 0
+        elif cla == 'mage':
+            actions = magiclist
+            maxhp = 100 + party_level * 5
+            magicstat = party_level * 5
+            attackstat = 0
+            defensestat = party_level
+            healingstat = party_level * 2
+        elif cla == 'healer':
+            actions = heallist
+            maxhp = 100 + party_level * 5
+            magicstat = party_level * 7
+            attackstat = 0
+            defensestat = 0
+            healingstat = party_level * 10
+        maxmp = 300 + party_level * 50
+        monsters.append(Enemy(party_level, race, cla, maxhp, maxmp, magicstat, attackstat, defensestat, healingstat, actions))
+        return monsters
 
 
-    #Needs to return previous += monsters
-    pass
+def fight(party, monsters):
+    '''NOT DONE
+    The fight, shows HP for players and creatures
+    Lets you attack and be attack
+    Should be able to kill players and mosters
+    Return a list of the daed monsters levels, so loot can be generated'''
+    fight = True
+    while fight is True:
+        for i in range(len(party)):
+            party[i].display_current()
+        for j in range(len(monsters)):
+            monsters[j].display_current()
+
+        for member in party:
+            action_choice = False
+            while action_choice == False:
+                Saction_choice = False
+                for i in range(len(member.actions)):
+                    print(str(i + 1) + ': ' + str(member.actions[i]))
+                print('Chose an action')
+                action = input()
+                if not action.isdigit():
+                    print('Invalid input (s)')
+                elif int(action) - 1 in range(len(member.actions)):
+                    print('working')
+                    while Saction_choice == False: #Let's the player choose its Secondary Action
+                        if int(action) == 1: #
+                            for i in range(len(member.Saction1)):
+                                print(str(i + 1) + ': ' + str(member.Saction1[i].name))
+                            print('Or type back (b) to get to the previous menu')
+                            Saction = input()
+                            if Saction.isdigit():
+                                if int(Saction) -1 in range(len(member.Saction1)):
+                                    attack = member.Saction1[int(Saction) -1]
+                                    target_chosen = False
+                                    while target_chosen == False:
+                                        print('Chose a target')
+                                        for j in range(len(monsters)):
+                                            print(str(j +1) + ': ', end='')
+                                            monsters[j].display_current()
+                                        target_choice = input()
+                                        if target_choice.isdigit():
+                                            if int(target_choice) - 1 in range(len(monsters)):
+                                                target = monsters[int(target_choice) - 1]
+                                                player_attack(member, target, attack)
+                                                target_chosen = True
+                                            else:
+                                                print('There are not that many enemies')
+                                        elif target_choice.lower().startswith('b'):
+                                            action_choice = False
+                                        else:
+                                            continue
+                        elif int(action) == 2:
+                            if member.cla == 'warrior' or member.cla == 'fighter':
+                                print('Placeholder, white dmg')
+                            elif member.cla == 'mage' or member.cla == 'healer':
+                                print('Placeholder, mana regen')
+                            Saction_choice = True
+
+                else:
+                    print('Invalid input (i)')
+
+                action = int(action)
+
+                if action == 3:
+                    print('Potins, placeholder')
+
+
+
+
+
+def player_attack(attacker, target, attack):
+    dmg = attacker.make_attack(attack)
+    target.take_dmg(dmg, attack)
+
 
 
 def get_loot(lootluck):
@@ -360,18 +484,20 @@ GreatHeal = Healing('Great Heal', 80, 270, 1)
 FromAbove = Healing('From Above', 100, 160, 'all')
 heallist = [SmallHeal, Heal, GreatHeal, FromAbove]
 
-meleeactions = ['Special Attack,' 'White damage', 'Potions']
-casteractions = ['Magic', 'Healing', 'Regenerate mana', 'Potions']
+meleeactions = ['Special Attack', 'White damage', 'Potions']
+mageactions = ['Magic', 'Regenerate mana', 'Potions']
+healeractions = ['Healing', 'Regenerate mana', 'Potions']
 
-ItemNameFirst =()
-ItemNameSecond = ()
+
+monsterclasses = ['warrior', 'fighter', 'mage', 'healer']
+monsterrace = ['Dark Elf', 'Orc', 'Haunted']
 
 print('Welcome to the world of I-cant-be-bothered-making-up-name')
 
 size = setup_party()
 
 party = []
-partylevel = 1
+party_level = 1
 inventory = []
 
 for i in range(size):
@@ -406,24 +532,29 @@ partyalive = True
 previous = 0
 exp = 0  # Not yet in use
 
+monsters = first_room() #Monsters is a list
+fight(party, monsters)
+
+'''
 while partyalive:
     roomroll = get_roomroll()
     if roomroll == 0:
         emptyroomtuple = empty_room()
-        if emptyroomtuple[0] = True:
+        if emptyroomtuple[0] == True:
             continue
-        elif emptyroomtuple[1] = True:
+        elif emptyroomtuple[1] == True:
             lootluck = 0
             get_loot()
         else:
-            monster = emptyroomtuple[2]
+            monsterroll == emptyroomtuple[2]
     else:
-        monster = roomroll
+        monsterroll = roomroll
 
-    if monster == 0
+    if monsterroll == 0:
         continue
     else:
-        for i in monster:
+        get_monsters(monsterroll, party_level)
+'''
 
 
 
