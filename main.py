@@ -89,7 +89,7 @@ def generate_actions():
     return actions
 
 
-def generate_sactions1():
+def generate_sactions():
     global cla
     if cla == 'mage' or cla == 'healer':
         Sactions1 = magiclist
@@ -98,15 +98,6 @@ def generate_sactions1():
     elif cla == 'fighter':
         Sactions1 = meleeflist
     return Sactions1
-
-
-def generate_sactions2():
-    global cla
-    if cla == 'mage' or cla == 'healer':
-        Sactions2 = heallist
-    elif cla == 'warrior' or cla == 'fighter':
-        Sactions2 = None
-    return Sactions2
 
 
 def generate_hp():
@@ -264,6 +255,7 @@ def first_room():
     monsters = get_monsters(monster, party_level)
     return monsters
 
+
 def get_roomroll():
     '''Returns roomroll, dependant on partysize and and how many monsters encountered in the previous room'''
     global size
@@ -380,65 +372,165 @@ def fight(party, monsters):
         for j in range(len(monsters)):
             monsters[j].display_current()
 
-        for member in party:
-            action_choice = False
-            while action_choice == False:
-                Saction_choice = False
-                for i in range(len(member.actions)):
-                    print(str(i + 1) + ': ' + str(member.actions[i]))
-                print('Chose an action')
-                action = input()
-                if not action.isdigit():
-                    print('Invalid input (s)')
-                elif int(action) - 1 in range(len(member.actions)):
-                    print('working')
-                    while Saction_choice == False: #Let's the player choose its Secondary Action
-                        if int(action) == 1: #
-                            for i in range(len(member.Saction1)):
-                                print(str(i + 1) + ': ' + str(member.Saction1[i].name))
-                            print('Or type back (b) to get to the previous menu')
-                            Saction = input()
-                            if Saction.isdigit():
-                                if int(Saction) -1 in range(len(member.Saction1)):
-                                    attack = member.Saction1[int(Saction) -1]
-                                    target_chosen = False
-                                    while target_chosen == False:
-                                        print('Chose a target')
-                                        for j in range(len(monsters)):
-                                            print(str(j +1) + ': ', end='')
-                                            monsters[j].display_current()
-                                        target_choice = input()
-                                        if target_choice.isdigit():
-                                            if int(target_choice) - 1 in range(len(monsters)):
-                                                target = monsters[int(target_choice) - 1]
-                                                player_attack(member, target, attack)
-                                                target_chosen = True
-                                            else:
-                                                print('There are not that many enemies')
-                                        elif target_choice.lower().startswith('b'):
-                                            action_choice = False
+        fight_player_attack(party)
+
+
+
+def fight_player_attack(party):
+    for member in party:
+        action_choice = False
+        while action_choice == False:
+            Saction_choice = False
+            for i in range(len(member.actions)):
+                print(str(i + 1) + ': ' + str(member.actions[i]))
+            print('Chose an action')
+            action = input()
+            if not action.isdigit():
+                print('Invalid input (s)')
+            elif int(action) - 1 in range(len(member.actions)):
+                print('working')
+                while Saction_choice == False:  # Let's the player choose its Secondary Action
+                    if int(action) == 1:  #
+                        for i in range(len(member.Saction)):
+                            print(str(i + 1) + ': ' + str(member.Saction[i].name))
+                        print('Or type back (b) to get to the previous menu')
+                        Saction = input()
+                        if Saction.isdigit():
+                            if int(Saction) - 1 in range(len(member.Saction)):
+                                attack = member.Saction[int(Saction) - 1]
+                                target_chosen = False
+                                while target_chosen == False:
+                                    print('Chose a target')
+                                    for j in range(len(monsters)):
+                                        print(str(j + 1) + ': ', end='')
+                                        monsters[j].display_current()
+                                    target_choice = input()
+                                    if target_choice.isdigit():
+                                        if int(target_choice) - 1 in range(len(monsters)):
+                                            target = monsters[int(target_choice) - 1]
+                                            player_attack(member, target, attack)
+                                            for i in range(len(party)):
+                                                party[i].display_current()
+                                            for j in range(len(monsters)):
+                                                monsters[j].display_current()
+                                            target_chosen = True
                                         else:
-                                            continue
-                        elif int(action) == 2:
-                            if member.cla == 'warrior' or member.cla == 'fighter':
-                                print('Placeholder, white dmg')
-                            elif member.cla == 'mage' or member.cla == 'healer':
-                                print('Placeholder, mana regen')
-                            Saction_choice = True
+                                            print('There are not that many enemies')
+                                    elif target_choice.lower().startswith('b'):
+                                        action_choice = False
+                                    else:
+                                        continue
+                    elif int(action) == 2:
+                        if member.cla == 'warrior' or member.cla == 'fighter':
+                            print('Placeholder, white dmg')
+                        elif member.cla == 'mage' or member.cla == 'healer':
+                            print('Placeholder, mana regen')
+                        Saction_choice = True
 
-                else:
-                    print('Invalid input (i)')
+            else:
+                print('Invalid input (i)')
 
-                action = int(action)
+            if int(action) == 3:
+                print('Potins, placeholder')
 
-                if action == 3:
-                    print('Potins, placeholder')
+
+def fight_enemy_attack():
+    lowplayer = []
+    targetlist = []
+    for player in party:
+        if player.hp > player.maxhp * 0.5:
+            lowplayer.append(player)
+    for enemy in monsters:
+        if enemy.cla == 'healer':
+            print('Healing placeholder')
+        else:
+            if len(party) == 1:
+                single_target_attacks = []
+                for strike in enemy.actions:
+                    if strike.target == 1:
+                        single_target_attacks.append(strike)
+                attack = single_target_attacks[random.randint(0, len(single_target_attacks))]
+                target = party[0]
+                dmg = enemy.make_attack(attack)
+                target.take_dmg(dmg, attack)
+            elif len(lowplayer) == 0: #If there are no players with low health
+                attack = enemy.actions[random.randint(0, len(enemy.actions))]
+                if attack.name == 'Taunt':
+                    print('Taunt placeholder')
+                elif attack.name == 'Rage':
+                    print('Rage placeholder')
+                elif attack.target == 1: #The attack has one target
+                    target = party[random.randint(0, len(party))]
+                    dmg = enemy.make_attack(attack)
+                    target.take_dmg(dmg, attack)
+                elif attack.target == 2: #The attack has 2 targets
+                    if len(party) == 2:
+                        target1 = party[0]
+                        target2 = party[1]
+                        dmg = enemy.make_attack(attack)
+                        target1.take_dmg(dmg, attack)
+                        target2.take_dmg(dmg, attack)
+                    else:
+                        target1 = party[0, random.randint(0, len(party))]
+                        target2 = None
+                        while target2 == None:
+                            targetX = party[0, random.randint(0, len(party))]
+                            if targetX != target1:
+                                target2 = targetX
+                        dmg = enemy.make_attack(attack)
+                        target1.take_dmg(dmg, attack)
+                        target2.take_dmg(dmg, attack)
+                elif attack.target == 'all':
+                    dmg = enemy.make_attack(attack)
+                    for player in party:
+                        player.take_dmg(dmg, attack)
+                elif attack.target == 'random':
+                    dmg = enemy.make_attack(attack)
+                    number_of_targets = random.randint(1, len(party))
+                    for i in number_of_targets:
+                        target = party[i]
+                        target.take_dmg(dmg, attack) #If bug, target might not be seen as an object
+            elif len(lowplayer) == 1: #One player has low health
+                target = lowplayer[0]
+                single_target_attacks = []
+                for strike in enemy.actions:
+                    if strike.target == 1:
+                        single_target_attacks.append(strike)
+                attack = single_target_attacks[random.randint(0, len(single_target_attacks))]
+                dmg = enemy.make_attack(attack)
+                target.take_dmg(dmg, attack)
+            elif len(lowplayer) == 2:
+                dual_target_attacks = []
+                for strike in enemy.actions:
+                    if strike.target == 2:
+                        dual_target_attacks.append(strike)
+                    if len(dual_target_attacks) == 1:
+                        attack = dual_target_attacks[0]
+                    else:
+                        attack = dual_target_attacks[random.randint(0,len(dual_target_attacks))]
+                    dmg = enemy.make_attack(attack)
+                    target1 = lowplayer[0]
+                    target2 = lowplayer[1]
+                    target1.take_dmg(dmg, attack)
+                    target2.take_dmg(dmg, attack)
+            else:
+                #Multiple target attacks only?
+
+
+                for i in attack.target:
+                    targetlist.append(party[0, random.randint(0, len(party))])
+
+
+                target = party[random.randint(0, len(party))]
+
+
 
 
 
 
 
 def player_attack(attacker, target, attack):
+    '''Generates dmg and removes resourses used for the attack'''
     dmg = attacker.make_attack(attack)
     target.take_dmg(dmg, attack)
 
@@ -456,7 +548,7 @@ def level_up():
 
 
 
-# Melee Attacks for warrior
+# Melee Attacks for warrior 
 PowerAttack = SpecAttack('Power Attack', 5, 50, 'none', 1) #Standard attack
 Fury = SpecAttack('Fury', 10, 60, 'none', 2) #Hits two random targets
 Taunt = SpecAttack('Taunt', 0, 0, 'taunt', 'all') #Focus all enemies on you for one round
@@ -505,15 +597,14 @@ for i in range(size):
     race = chose_race(name)
     cla = chose_class(name)
     actions = generate_actions()
-    Sactions1 = generate_sactions1()
-    Sactions2 = generate_sactions2()
+    Sactions = generate_sactions()
     maxhp = generate_hp()
     maxmp = generate_mp()
     magicstat = generate_magic_stat()
     attackstat = generate_attack_stat()
     defensestat = generate_defense_stat()
     healingstat = generate_healing_stat()
-    party.append(Player(name, race, cla, actions, Sactions1, Sactions2,
+    party.append(Player(name, race, cla, actions, Sactions,
                            maxhp, maxmp, magicstat, attackstat, defensestat, healingstat))
     print('You are now ' + name +', the ' + race + '.')
     print('You have pledged your skills as a ' + cla + ' to rescue the people of I-cant-be bothered-making-up-a-name from whatever-is-in-this-cave-or-whatever-it-is.')

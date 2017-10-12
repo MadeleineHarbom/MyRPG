@@ -6,32 +6,15 @@ class MyColours:
     BLUE = '\033[94m'
     WARNING = '\033[93m' '\033[1m'
 
-#class Character(object):
-#    def __init__(self, race, cla, maxhp, maxmp, magicstat, attackstat, defensestat, healingstat):
-#        self.ap = 60  # Attack Points
-#        self.maxap = 60
-#        self.hp = maxhp  # Health
-#        self.maxhp = maxhp
-#        self.mp = maxmp  # Mana Points
-#        self.maxmp = maxmp
-#        self.race = race
-#        self.cla = cla  # class
-#        self.magic = magicstat  # Bonus to magic spells
-#        self.attack = attackstat  # Bonus to melee dmg
-#        self.defense = defensestat #Reduces dmg taken
-#        self.healing = healingstat #Increases healing
-
-
 
 class Player():
-    def __init__(self, name, race, cla, actions, Saction1, Saction2, maxhp, maxmp,
+    def __init__(self, name, race, cla, actions, Saction, maxhp, maxmp,
                  magicstat, attackstat, defensestat, healingstat):
         self.name = name
         self.deviation = 5
         self.eq = []  # Equipped Items
         self.actions = actions  # First action option
-        self.Saction1 = Saction1
-        self.Saction2 = Saction2
+        self.Saction = Saction
         self.rage = 60  # Attack Points
         self.maxrage = 60
         self.hp = maxhp  # Health
@@ -69,6 +52,8 @@ class Player():
             print('\t', self.mp, '/', self.maxmp, 'Mana Points')
 
     def make_attack(self, attack):
+        '''Removes resouces from player when attacking
+        Generates amount of damage to be dealt'''
         if isinstance(attack, SpecAttack):
             self.rage =- attack.cost
         elif isinstance(attack, Magic):
@@ -82,6 +67,8 @@ class Player():
             dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
         return dmg
 
+    def take_dmg(self, dmg, attack):
+        self.hp =- dmg
 
     def start_potions(self):
         pass
@@ -124,7 +111,7 @@ class Enemy():
         self.level = random.randint(partylevel - 1, partylevel +2)
         self.deviation = 5
         self.magic = magicstat  # Bonus to magic spells
-        self.actions = actions  # First action option
+        self.actions = actions
         self.name = str(race + cla)
         self.rage = 60  # Attack Points
         self.maxrage = 60
@@ -138,6 +125,24 @@ class Enemy():
         self.attack = attackstat  # Bonus to melee dmg
         self.defense = defensestat  # Reduces dmg taken
         self.healing = healingstat  # Increases healing
+
+    def make_attack(self, attack):
+        '''Removes resources from Enemy when attack is made
+        Generates amount of damage to be made'''
+        if isinstance(attack, SpecAttack):
+            self.rage =- attack.cost
+        elif isinstance(attack, Magic):
+            self.mp =- attack.cost
+
+        if isinstance(attack, SpecAttack):
+            base_dmg = attack.dmg + self.attack
+            dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
+        elif isinstance(attack, Magic):
+            base_dmg = attack.dmg + self.magic
+            dmg = random.randint(base_dmg - self.deviation, base_dmg + self. deviation)
+        return dmg
+
+
 
     def display_current(self):
         if self.cla == 'warrior' or self.cla == 'fighter':
