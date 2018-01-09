@@ -1,4 +1,5 @@
 import random
+from enum import Enum
 
 class MyColours:
     RED = '\033[93m'
@@ -7,14 +8,27 @@ class MyColours:
     WARNING = '\033[93m' '\033[1m'
 
 
+class Const(Enum):
+    WHITEDMG = 'weapon attack without using of resources'
+    REGEN = 'regenerate spendable resources'
+    SPECIALATTACK = 'special attack, melee'
+    POTS = 'Potions'
+    BACK = 'return to previous menu'
+    MAGIC = 'Offensive magic'
+    HEALING = 'Healing magic'
+    TURNOVER = 'The players turn is over'
+
+
 class Player():
-    def __init__(self, name, race, cla, actions, Saction, maxhp, maxmp,
+    def __init__(self, name, race, cla, actions, melee_actions, healing_actions, magic_actions, maxhp, maxmp,
                  magicstat, attackstat, defensestat, healingstat):
         self.name = name
         self.deviation = 5
         self.eq = []  # Equipped Items
         self.actions = actions  # First action option
-        self.Saction = Saction
+        self.melee_actions = melee_actions  # Secondsary action option
+        self.healing_actions = healing_actions  # Secondsary action option
+        self.magic_actions = magic_actions  # Secondsary action option
         self.rage = 60  # Attack Points
         self.maxrage = 60
         self.hp = maxhp  # Health
@@ -23,10 +37,10 @@ class Player():
         self.maxmp = maxmp
         self.race = race
         self.cla = cla  # class
-        self.magic = magicstat  # Bonus to magic spells
-        self.attack = attackstat  # Bonus to melee dmg
-        self.defense = defensestat  # Reduces dmg taken
-        self.healing = healingstat  # Increases healing
+        self.magic_stat = magicstat  # Bonus to magic spells
+        self.melee_stat = attackstat  # Bonus to melee dmg
+        self.defense_stat = defensestat  # Reduces dmg taken
+        self.healing_stat = healingstat  # Increases healing
 
 
 
@@ -55,20 +69,34 @@ class Player():
         '''Removes resouces from player when attacking
         Generates amount of damage to be dealt'''
         if isinstance(attack, SpecAttack):
-            self.rage =- attack.cost
+            self.rage -= attack.cost
         elif isinstance(attack, Magic):
-            self.mp =- attack.cost
+            self.mp -= attack.cost
 
         if isinstance(attack, SpecAttack):
-            base_dmg = attack.dmg + self.attack
+            base_dmg = attack.dmg + self.melee_stat
             dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
         elif isinstance(attack, Magic):
-            base_dmg = attack.dmg + self.magic
+            base_dmg = attack.dmg + self.magic_stat
             dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
         return dmg
 
     def take_dmg(self, dmg, attack):
-        self.hp =- dmg
+        self.hp -= dmg
+
+    def cast_heal(self, heal):
+        self.mp -= heal.cost
+        base_heal = heal.heal + self.healing_stat
+        heal_dmg = random.randint(base_heal - self.deviation, base_heal + self.deviation)
+        return heal_dmg
+
+
+    def get_healed(self, heal_dmg):
+        self.hp += heal_dmg
+        if self.hp > self.maxhp:
+            self.hp = self.maxhp
+
+
 
     def start_potions(self):
         pass
@@ -77,7 +105,79 @@ class Player():
         pass
 
 
+
+class Enemy():
+    def __init__(self, partylevel, race, cla, maxhp, maxmp, magicstat, attackstat, defensestat, healingstat, actions):
+        self.level = random.randint(partylevel - 1, partylevel +2)
+        self.deviation = 5
+        self.magic = magicstat  # Bonus to magic spells
+        self.actions = actions
+        self.name = str(race + ' ' + cla)
+        self.rage = 60  # Attack Points
+        self.maxrage = 60
+        self.hp = maxhp  # Health
+        self.maxhp = maxhp
+        self.mp = maxmp  # Mana Points
+        self.maxmp = maxmp
+        self.race = race
+        self.cla = cla  # class
+        self.magic = magicstat  # Bonus to magic spells
+        self.attack = attackstat  # Bonus to melee dmg
+        self.defense = defensestat  # Reduces dmg taken
+        self.healing = healingstat  # Increases healing
+
+    def display_current(self):
+        if self.cla == 'warrior' or self.cla == 'fighter':
+            print(self.name, ':')
+            print('\t',  self.hp, '/', self.maxhp, ' Hitpoints')
+            print('\t', self.rage, '/', self.maxrage, 'Attack Power')
+        elif self.cla == 'mage' or self.cla == 'healer':
+            print(self.name, ':')
+            print('\t', self.hp, '/', self.maxhp, ' Hitpoints')
+            print('\t', self.mp, '/', self.maxmp, 'Mana Points')
+
+
+    def make_attack(self, attack):
+        '''Removes resources from Enemy when attack is made
+        Generates amount of damage to be made'''
+        if isinstance(attack, SpecAttack):
+            self.rage -= attack.cost
+        elif isinstance(attack, Magic):
+            self.mp -= attack.cost
+
+        if isinstance(attack, SpecAttack):
+            base_dmg = attack.dmg + self.attack
+            dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
+        elif isinstance(attack, Magic):
+            base_dmg = attack.dmg + self.magic
+            dmg = random.randint(base_dmg - self.deviation, base_dmg + self. deviation)
+        return dmg
+
+
+    def take_dmg(self, dmg, attack):
+        self.hp -= dmg
+
+    def cast_heal(self, heal, target):
+        self.mp -= heal.cost
+        base_heal = heal.heal + target.healing
+        heal_dmg = random.randint(base_heal - self.deviation, base_heal + self.deviation)
+        return heal_dmg
+
+    def get_healed(self, heal_dmg):
+        self.hp += heal_dmg
+        if self.hp > self.maxhp:
+            self.hp = self.maxhp
+
 class SpecAttack:
+    def __init__(self, name, cost, dmg, effect, target):
+        self.name = name
+        self.cost = cost
+        self.dmg = dmg
+        self.effect = effect
+        self.target = target
+
+
+class Magic:
     def __init__(self, name, cost, dmg, effect, target):
         self.name = name
         self.cost = cost
@@ -94,68 +194,6 @@ class Healing:
         self.target = target
 
 
-class Magic:
-    def __init__(self, name, cost, dmg, effect, target):
-        self.name = name
-        self.cost = cost
-        self.dmg = dmg
-        self.effect = effect
-        self.target = target
-
-
-
-
-
-class Enemy():
-    def __init__(self, partylevel, race, cla, maxhp, maxmp, magicstat, attackstat, defensestat, healingstat, actions):
-        self.level = random.randint(partylevel - 1, partylevel +2)
-        self.deviation = 5
-        self.magic = magicstat  # Bonus to magic spells
-        self.actions = actions
-        self.name = str(race + cla)
-        self.rage = 60  # Attack Points
-        self.maxrage = 60
-        self.hp = maxhp  # Health
-        self.maxhp = maxhp
-        self.mp = maxmp  # Mana Points
-        self.maxmp = maxmp
-        self.race = race
-        self.cla = cla  # class
-        self.magic = magicstat  # Bonus to magic spells
-        self.attack = attackstat  # Bonus to melee dmg
-        self.defense = defensestat  # Reduces dmg taken
-        self.healing = healingstat  # Increases healing
-
-    def make_attack(self, attack):
-        '''Removes resources from Enemy when attack is made
-        Generates amount of damage to be made'''
-        if isinstance(attack, SpecAttack):
-            self.rage =- attack.cost
-        elif isinstance(attack, Magic):
-            self.mp =- attack.cost
-
-        if isinstance(attack, SpecAttack):
-            base_dmg = attack.dmg + self.attack
-            dmg = random.randint(base_dmg - self.deviation, base_dmg + self.deviation)
-        elif isinstance(attack, Magic):
-            base_dmg = attack.dmg + self.magic
-            dmg = random.randint(base_dmg - self.deviation, base_dmg + self. deviation)
-        return dmg
-
-
-
-    def display_current(self):
-        if self.cla == 'warrior' or self.cla == 'fighter':
-            print(self.name, ':')
-            print('\t',  self.hp, '/', self.maxhp, ' Hitpoints')
-            print('\t', self.rage, '/', self.maxrage, 'Attack Power')
-        elif self.cla == 'mage' or self.cla == 'healer':
-            print(self.name, ':')
-            print('\t', self.hp, '/', self.maxhp, ' Hitpoints')
-            print('\t', self.mp, '/', self.maxmp, 'Mana Points')
-
-    def take_dmg(self, dmg, attack):
-        self.hp =- dmg
 
 
 class Boss:
@@ -195,7 +233,7 @@ class Item:
         one_H_list = ('Danger Wand', 'Needle', 'Dagger', 'Dirk', 'Knife', 'Hatchet')
         two_H_list = ('Great Axe', 'Sword', 'Mighty Sword', 'Sharp Rod', 'Pokey Staff', 'Axe', 'Broadsword', 'Cleaver')
         stafflist = ('Might Stick', 'Staff', 'Poker', 'Rod', 'Pole', 'Stave', 'Cane', 'Walking Stick', 'Twig')
-        shieldlist = ()
+        shieldlist = ('Buckler')
 
         if self.slot == 'Head':
             roll = random.randint(0, len(headlist))

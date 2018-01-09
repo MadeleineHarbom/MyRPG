@@ -1,8 +1,4 @@
 
-def level_up():
-    #Chose where you want +1 when you gain a level
-    pass
-
 randomname = ['Roch', 'Asa',  # Female healers
               'Kyra', 'Dani', 'Jalen',  # Male healers
               'Adair', 'Barrie', 'Boadicea', 'Gerardine', 'Haralda',  # Female warriors
@@ -16,41 +12,15 @@ randomname = ['Roch', 'Asa',  # Female healers
 # Witch
 # Wizard
 #Elf
-# Night
+# Nightr()
 # Dwarf
 # Orc
-class SpecAttack:
-    def __init__(self, name, cost, dmg, effect, target):
-        self.name = name
-        self.cost = cost
-        self.dmg = dmg
-        self.effect = effect
-        self.target = target
-
-public static void main (main string[] ARGS)
-
-int x = getMyNumber(3, 4)
-
-public void myNumber(int a, int b){
-    int myInt;
-    myInt = a + b;
-}
-
-class Specattack{
-    public Specattack(){
-        print("Hello world, I have no arguments");
-    }
-    public Specattack(string value, int x, int dmg){
-        self.name = value;
-        self.cost = x;
-    }
-}
-
-specattack myattack = new SpecAttack()
 
 
-with open('/Users/madeleineharbom/Downloads/sample.txt', 'a') as sample_file:
-for i in range(1,13):
-    print(i, 'times 2 is', (i*2)).
 
-#jabber.append(list)
+stuff = 5
+list = [1, 2, 3, 4, 5]
+
+print(range(5))
+
+

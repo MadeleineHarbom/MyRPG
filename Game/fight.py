@@ -1,8 +1,8 @@
 import random
 
-from Game.classes import Enemy
-from Game.lists import magiclist, meleewlist, meleeflist, monsterclasses, \
-    monsterrace, heallist, GreatHeal, FromAbove, MediumHeal, SmallHeal
+from Game.classes import Enemy, Const, Player
+from Game.lists import meleelist_warrior, meleelist_fighter, monsterclasses, \
+    monsterrace, GreatHeal, FromAbove, MediumHeal, SmallHeal, heallist_healer, magiclist_mage
 
 
 def get_roomroll(party, previous):
@@ -73,7 +73,7 @@ def get_monsters(monster, party_level):
         cla = monsterclasses[random.randint(0, 3)]
         race = monsterrace[random.randint(0, len(monsterrace)-1)]
         if cla == 'warrior':
-            actions = meleewlist
+            actions = meleelist_warrior
             maxhp = 150 + party_level * 30
             magicstat = 0
             attackstat = party_level * 5
@@ -81,20 +81,20 @@ def get_monsters(monster, party_level):
             healingstat = 0
         elif cla == 'fighter':
             maxhp = 120 + party_level * 20
-            actions = meleeflist
+            actions = meleelist_fighter
             magicstat = 0
             attackstat = party_level * 7
             defensestat = party_level * 5
             healingstat = 0
         elif cla == 'mage':
-            actions = magiclist
+            actions = magiclist_mage
             maxhp = 100 + party_level * 5
             magicstat = party_level * 5
             attackstat = 0
             defensestat = party_level
             healingstat = party_level * 2
         elif cla == 'healer':
-            actions = heallist
+            actions = heallist_healer
             maxhp = 100 + party_level * 5
             magicstat = party_level * 7
             attackstat = 0
@@ -106,11 +106,10 @@ def get_monsters(monster, party_level):
 
 
 def fight(party, monsters, dead_player_list):
-    '''NOT DONE
-    The fight, shows HP for players and creatures
+    """The fight, shows HP for players and creatures
     Lets you attack and be attack
-    Should be able to kill players and mosters
-    Return a list of the dead monsters levels, so loot can be generated'''
+    Should be able to kill players and monsters
+    Return a list of the dead monsters levels, so loot can be generated"""
     fighting = True
     dead_monster_list = []
     while fighting is True:
@@ -119,73 +118,184 @@ def fight(party, monsters, dead_player_list):
         for j in range(len(monsters)):
             monsters[j].display_current()
 
-        fight_player_attack(party, monsters)
+        fight_player_turn(party, monsters)
         fight_enemy_attack(party, monsters)
         dead_players(party, dead_player_list)
         dead_enemies(monsters, dead_monster_list)
-        if len(party) == 0 or len(monsters) == 0:
+        if len(party) == 0:
+            print('Game Over')
+            print('Placeholder, ask to play again?')
             fighting = False
+        elif len(monsters) == 0:
+            print('You have conquered')
+            fighting = False
+            return dead_monster_list
 
 
-
-def fight_player_attack(party, monsters):
+def fight_player_turn(party, monsters):
+    """Uses the following methods"""
     for member in party:
-        action_choice = False
-        while action_choice == False:
-            Saction_choice = False
-            for i in range(len(member.actions)):
-                print(str(i + 1) + ': ' + str(member.actions[i]))
-            print('Chose an action')
-            action = input()
-            if not action.isdigit():
-                print('Invalid input (s)')
-            elif int(action) - 1 in range(len(member.actions)):
-                while Saction_choice == False:  # Let's the player choose its Secondary Action
-                    if int(action) == 1:  #
-                        for i in range(len(member.Saction)):
-                            print(str(i + 1) + ': ' + str(member.Saction[i].name))
-                        print('Or type back (b) to get to the previous menu') # Doesnt work
-                        Saction = input()
-                        if Saction.isdigit():
-                            if int(Saction) - 1 in range(len(member.Saction)):
-                                attack = member.Saction[int(Saction) - 1]
-                                target_chosen = False
-                                while target_chosen == False:
-                                    print('Chose a target')
-                                    for j in range(len(monsters)):
-                                        print(str(j + 1) + ': ', end='')
-                                        monsters[j].display_current()
-                                    target_choice = input()
-                                    if target_choice.isdigit():
-                                        if int(target_choice) - 1 in range(len(monsters)):
-                                            target = monsters[int(target_choice) - 1]
-                                            player_attack(member, target, attack)
-                                            for i in range(len(party)):
-                                                party[i].display_current()
-                                            for j in range(len(monsters)):
-                                                monsters[j].display_current()
-                                            target_chosen = True
-                                            Saction_choice = True
-                                            action_choice = True
-                                            # Make a lot of shit True
-                                        else:
-                                            print('There are not that many enemies')
-                                    elif target_choice.lower().startswith('b'):
-                                        action_choice = False
-                                    else:
-                                        continue
-                    elif int(action) == 2:
-                        if member.cla == 'warrior' or member.cla == 'fighter':
-                            print('Placeholder, white dmg')
-                        elif member.cla == 'mage' or member.cla == 'healer':
-                            print('Placeholder, mana regen')
-                        Saction_choice = True
-                    elif int(action) == 3:
-                        print('Potions, placeholder')
-                        Saction_choice = True
-            else:
-                print('Invalid input (i)')
+        fight_player_actions(member, party, monsters)
 
+
+def fight_player_actions(member, party, monsters):
+    """Returns action constant"""
+    retreat = None
+    while True:
+        if retreat == Const.TURNOVER:
+            break
+        else:
+            for i in range(len(member.actions)):
+                print(str(i + 1) + ': ' + str(member.actions[i]['description']))
+            action_choice = input()
+            if not action_choice.isdigit():
+                print('Invalid input, please enter a number')
+            elif int(action_choice) - 1 in range(len(member.actions)):
+                action_type = member.actions[int(action_choice) - 1]['action']
+                retreat = fight_player_attack(member, action_type, party, monsters)
+            else:
+                print('Invalid input, please enter one of the spells')
+
+
+def fight_player_attack(member, action_type, party, monsters):
+    """Returns action or Const.Back"""
+    if action_type == Const.SPECIALATTACK:
+        retreat = fight_player_specialattack(member, monsters)
+    elif action_type == Const.WHITEDMG:
+        retreat = fight_player_whitedmg(member, monsters)
+    elif action_type == Const.REGEN:
+        retreat = fight_player_regen(member)
+    elif action_type == Const.POTS:
+        retreat = fight_player_pots(member, party, monsters)
+    elif action_type == Const.MAGIC:
+        retreat = fight_player_magic(member, monsters)
+    elif action_type == Const.HEALING:
+        retreat = fight_player_healing(member, party, monsters)
+    return retreat
+
+
+def fight_player_specialattack(member, monsters):
+    retreat = None
+    while True:
+        if retreat == Const.BACK:
+            return retreat
+        elif retreat == Const.TURNOVER:
+            return retreat
+        else:
+            for i in range(len(member.melee_actions)):
+                print(str(i + 1) + ': ' + str(member.melee_actions[i].name))
+            print('Pick an attack or type back (b) to pick a different action')
+            attack_choice = input()
+            if attack_choice.lower().startswith('b'):
+                retreat = Const.BACK
+            elif not attack_choice.isdigit():
+                print('Invalid choice, please enter a number')
+            elif int(attack_choice) -1 in range(len(member.melee_actions)):
+                attack = member.melee_actions[int(attack_choice) -1]
+                retreat = fight_player_target_enemy(member, attack, monsters)
+            else:
+                print('Invalid input, please enter one of the spells')
+
+
+def fight_player_whitedmg(member, monsters):
+    print('placeholder, needs weapon dmg')
+    return Const.TURNOVER
+
+
+def fight_player_regen(member):
+    print('placeholder, figure this shit out')
+    return Const.TURNOVER
+
+
+def fight_player_pots(member, party, monsters):
+    print('placeholder, needs pots')
+    return Const.BACK
+
+
+def fight_player_magic(member, monsters):
+    retreat = None
+    while True:
+        if retreat == Const.BACK:
+            return retreat
+        elif retreat == Const.TURNOVER:
+            return retreat
+        for i in range(len(member.magic_actions)):
+            print(str(i + 1) + ': ' + str(member.magic_actions[i].name))
+        print('Pick an attack or type back (b) to pick a different action')
+        attack_choice = input()
+        if attack_choice.lower().startswith('b'):
+            return Const.BACK
+        elif not attack_choice.isdigit():
+            print('Invalid choice, please enter a number')
+        elif int(attack_choice) -1 in range(len(member.magic_actions)):
+            attack = member.magic_actions[int(attack_choice) -1]
+            retreat = fight_player_target_enemy(member, attack, monsters)
+        else:
+            print('Invalid input, please enter one of the spells')
+
+
+def fight_player_healing(member, party, monsters):
+    retreat = None
+    while True:
+        if retreat == Const.BACK:
+            return retreat
+        elif retreat == Const.TURNOVER:
+            return retreat
+        for i in range(len(member.healing_actions)):
+            print(str(i + 1) + ': ' + str(member.healing_actions[i].name))
+        print('Pick an attack or type back (b) to pick a different action')
+        attack_choice = input()
+        if attack_choice.lower().startswith('b'):
+            return Const.BACK
+        elif not attack_choice.isdigit():
+            print('Invalid choice, please enter a number')
+        elif int(attack_choice) -1 in range(len(member.healing_actions)):
+            heal = member.healing_actions[int(attack_choice) -1]
+            retreat = fight_player_target_friendly(member, heal, party, monsters)
+        else:
+            print('Invalid input, please enter one of the spells')
+
+
+def fight_player_target_enemy(member, attack, monsters):
+    """Targets an enemy
+    Used by ....
+    Returns Const.BACK or Const.TURNOVER"""
+    while True:
+        for i in range(len(monsters)):
+            print(str(i + 1) + ': ' + str(monsters[i].name))
+        print('Pick a target to attack, or type back (b) to pick another attack')
+        target_choice = input()
+        if target_choice.lower().startswith('b'):
+            return Const.BACK
+        elif not target_choice.isdigit():
+            print('Invalid. Please enter a number')
+        elif int(target_choice) - 1 in range(len(monsters)):
+            target = monsters[int(target_choice) - 1]
+            dmg = member.make_attack(attack)
+            target.take_dmg(dmg, attack)
+            return Const.TURNOVER
+        else:
+            print('Invalid target, please pick a living target')
+
+
+def fight_player_target_friendly(member, heal, party, monsters):
+    """Target a party member"""
+    while True:
+        for i in range(len(party)):
+            print(str(i + 1) + ': ' + str(party[i].name))
+        print('Pick a target to heal')
+        target_choice = input()
+        if target_choice.lower().startswith('b'):
+            return Const.BACK
+        elif not target_choice.isdigit():
+            print('Invalid input, please enter a number')
+        elif int(target_choice) - 1 in range(len(party)):
+            target = party[int(target_choice) - 1]
+            heal_dmg = member.cast_heal(heal)
+            target.get_healed(heal_dmg)
+            return Const.TURNOVER
+        else:
+            print('Invalid target, please pick a living target')
 
 
 def fight_enemy_attack(party, monsters):
@@ -242,7 +352,7 @@ def fight_enemy_attack(party, monsters):
                 heal_dmg = enemy.cast_heal(heal, target)
                 target.get_healed(heal_dmg)
             else:
-                print('Placeholder for mana-regen')
+                print('Placeholder for enemy-mana-regen')
         else:
             low_player = []  # Finds low-HP targets to attack
             for player in party:
@@ -260,9 +370,9 @@ def fight_enemy_attack(party, monsters):
             elif len(low_player) == 0: #If there are no players with low health
                 attack = enemy.actions[random.randint(0, len(enemy.actions) -1)]
                 if attack.name == 'Taunt':
-                    print('Taunt placeholder')
+                    print('Enemy Taunt placeholder')
                 elif attack.name == 'Rage':
-                    print('Rage placeholder')
+                    print('Enemy Rage placeholder')
                 elif attack.target == 1: #The attack has one target
                     target = party[random.randint(0, len(party) -1)]
                     dmg = enemy.make_attack(attack)
@@ -350,12 +460,6 @@ def fight_enemy_attack(party, monsters):
                         random_targets.append(target)
                         target.take_dmg(dmg, attack)
  # Add debuffs to player / target before and after attacks
-
-
-def player_attack(attacker, target, attack):
-    """Generates dmg and removes resources used for the attack"""
-    dmg = attacker.make_attack(attack)
-    target.take_dmg(dmg, attack)
 
 
 def dead_players(party, dead_player_list):
