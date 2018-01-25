@@ -1,8 +1,10 @@
 
 
-# Melee Attacks for warrior
+
 from Game.classes import SpecAttack, Magic, Healing, Const
 
+
+# Melee Attacks for warrior
 PowerAttack = SpecAttack('Power Attack', 5, 5, 'none', 1) #Standard attack
 Fury = SpecAttack('Fury', 10, 6, 'none', 2) #Hits two random targets
 Taunt = SpecAttack('Taunt', 0, 0, 'taunt', 'all') #Focus all enemies on you for one round
@@ -63,3 +65,21 @@ actions_healer = [{'description':'Healing', 'action':Const.HEALING},
 
 monsterclasses = ['warrior', 'fighter', 'mage', 'healer']
 monsterrace = ['Dark Elf', 'Orc', 'Haunted']
+
+
+randomname = ['Roch', 'Asa',  # Female healers
+              'Kyra', 'Dani', 'Jalen',  # Male healers
+              'Adair', 'Barrie', 'Boadicea', 'Gerardine', 'Haralda',  # Female warriors
+              'Luella', 'Meave', 'Sloane', 'Trista', 'Xenia', 'Zarya',  # Female warriors
+              'Abner', 'Alejandro', 'Andre', 'Alvar', 'Andrian', 'Barack', 'Bearach',  # Male warriors
+              'Caballero', 'Caius', 'Charro', 'Donahue', 'Eginhard', 'Gareth', 'Garrick',  # Male warriors
+              'George', 'Harlow',  # Male warriors
+              'Aoife', 'Ayla', 'Brett', 'Ceridwen', 'Christabel', 'Clelia', 'Consuelo', 'Desdemona',  # Female heroes
+              'Gilda', 'Halfrida', 'Hildegard', 'Jemima', 'Leonora', 'Rowena', 'Valkyrie',  # Female heroes
+              'Amory', 'Bayard', 'Cedric', 'Cassander', 'Conlan', 'Decatur', 'Egil', 'Einar',  # Male heroes
+              'Fearghas', 'Flainn', 'Gwayne', 'Horatius', 'Leandro', 'Roland', 'Sigvard',  # Male heroes
+              'Glenda', 'Medea', 'Ursula',  # Witch
+              'Merlin', # Wizard
+              'Ailsa', 'Albreda', 'Alverdine', 'Elfrida',  # Female elf
+              'Elger',  # Male elf
+              'Alvis', 'Fafnir']  # Male dwarf

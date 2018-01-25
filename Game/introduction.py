@@ -1,8 +1,9 @@
 import time
+import random
 
-from Game.fight import get_monsters
+from Game.rooms import get_monsters
 from Game.lists import actions_fighter, actions_healer, actions_mage, actions_warrior, meleelist_fighter, \
-    meleelist_warrior, magiclist_healer, magiclist_mage, heallist_healer
+    meleelist_warrior, magiclist_healer, magiclist_mage, heallist_healer, randomname
 
 
 def setup_party():
@@ -28,10 +29,24 @@ def setup_party():
             adventurer = input()
 
 
+def chose_name():
+    while True:
+        print('Your hero needs a name')
+        print('Enter a name or type random (r)')
+        nameinput = input().capitalize()
+        if nameinput == 'Random' or nameinput == 'R':
+            name = randomname[random.randint(0, len(randomname)) - 1]
+            return name
+        elif nameinput == '' or nameinput == ' ' or len(nameinput) < 2:
+            print('Invalid name')
+        else:
+            name = nameinput
+            return name
+
+
 def chose_race(name):
     print('Your character can be Human, elf, dwarf or orc. Or type stats (s) to hear about the races.')
-    race = False
-    while race is False:
+    while True:
         racechoice = input().lower()
         if racechoice.startswith('s'):
             print('Something about humans')
@@ -39,42 +54,41 @@ def chose_race(name):
             print('Something about dwarfs')
             print('Something about smelly orcs')
         elif racechoice.startswith('h'):
-            print('You have chosen you adventurer, ' + name + ', to be human')
+            print('You have chosen your adventurer, ' + name + ', to be human')
             return 'human'
-            race = True
         elif racechoice.startswith('e'):
-            print('You have chosen you adventurer, ' + name + ', to be an elf')
+            print('You have chosen your adventurer, ' + name + ', to be an elf')
             return 'elf'
-            race = True
         elif racechoice.startswith('d'):
-            print('You have chosen you adventurer, ' + name + ', to be a dwarf')
+            print('You have chosen your adventurer, ' + name + ', to be a dwarf')
             return 'dwarf'
-            race = True
         elif racechoice.startswith('o'):
-            print('You have chosen you adventurer, ' + name + ', to be an orc')
+            print('You have chosen your adventurer, ' + name + ', to be an orc')
             return 'orc'
-            race = True
+        elif racechoice.startswith('r'):
+            racelist = ('human', 'elf', 'dwarf', 'orc')
+            race = racelist[random.randint(0,3)]
+            return race
         else:
             print('Huh?')
 
 
 def chose_class(name):
-    given = False
     print(name, 'needs a class. You can chose between warrior, fighter, mage or healer')
-    while given is False:
+    while True:
         clas = input().lower()
         if clas.startswith('w'):
-            given = True
             return 'warrior'  # Can use a shield
         elif clas.startswith('f'):
-            given = True
             return 'fighter'  # Can use big weapons
         elif clas.startswith('m'):
-            given = True
             return 'mage'
         elif clas.startswith('h'):
-            given = True
             return 'healer'
+        elif clas.startswith('r'):
+            classlist = ('warrior', 'fighter', 'mage', 'healer')
+            cla = classlist[random.randint(0, 3)]
+            return cla
         else:
             print('Huh?')
 

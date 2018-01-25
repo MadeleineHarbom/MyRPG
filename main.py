@@ -1,11 +1,13 @@
-from Game.classes import Player
 import sys
+import time
 
+from Game.classes import Player
+from Game.rooms import get_roomroll, empty_room, get_monsters
 from Game.fight import fight
 from Game.introduction import chose_race, chose_class, generate_actions, generate_healing, generate_magic, \
     generate_melee, generate_hp, generate_mp, \
     generate_magic_stat, generate_attack_stat, generate_defense_stat, generate_healing_stat, enter_cave_story, \
-    first_room, setup_party
+    first_room, setup_party, chose_name
 
 print('Welcome to the world of I-cant-be-bothered-making-up-name')
 
@@ -18,7 +20,7 @@ dead_player_list = []
 dead_monster_list = []
 
 for i in range(size):
-    name = input('Enter the name of your character\n')
+    name = chose_name()
     race = chose_race(name)
     cla = chose_class(name)
     actions = generate_actions(cla)
@@ -50,34 +52,45 @@ party_alive = True
 previous = 0
 exp = 0  # Not yet in use
 
+monsters = first_room(party_level)  # Monsters is a list
+fight(party, monsters, dead_player_list, dead_player_list)
 
-monsters = first_room(party_level) #Monsters is a list
-fight(party, monsters, dead_player_list)
+print('Press enter to continue, or type q to quit the game')
+next_room = input().lower()
+if next_room == 'quit':
+    sys.exit()
+else:
+    print('With trembling steps, you walk through a tunnel')
+    print('It is small and you need to bow your head')
+    print('You can feel the drippings from the roof of the rocks rolling down your face')
+    time.sleep(2)
+# Get Loot
 
-'''
-while partyalive:
-    roomroll = get_roomroll()
+while party_alive == True:
+    roomroll = get_roomroll(party, previous)
     if roomroll == 0:
-        emptyroomtuple = empty_room()
-        if emptyroomtuple[0] == True:
+        empty_room(party, party_level, dead_monster_list ,dead_player_list)
+    else:
+        monsters = get_monsters(roomroll, party_level)
+        print('Oh no, there\'s someone there!')
+        print('Someone... or something!')
+        fight(party, monsters, dead_monster_list, dead_player_list)
+    if len(party) == 0:
+        break
+    print('Would you like to view your inventory')
+    while True:
+        print('Yes / No')
+        inv_reply = input().lower()
+        if inv_reply.startswith('y'):
+            print('View inventory, placeholder')
             continue
-        elif emptyroomtuple[1] == True:
-            lootluck = 0
-            get_loot()
+        elif inv_reply.startswith('n'):
+            print('You move further into the cave')
+            break
         else:
-            monsterroll == emptyroomtuple[2]
-    else:
-        monsterroll = roomroll
+            continue
 
-    if monsterroll == 0:
-        continue
-    else:
-        get_monsters(monsterroll, party_level)
-'''
-
-
-
-
+print('Test')
 
 
 

@@ -97,7 +97,6 @@ class Player():
             self.hp = self.maxhp
 
 
-
     def start_potions(self):
         pass
 
@@ -156,6 +155,8 @@ class Enemy():
 
     def take_dmg(self, dmg, attack):
         self.hp -= dmg
+        if self.hp < 0:
+            self.hp = 0
 
     def cast_heal(self, heal, target):
         self.mp -= heal.cost
